@@ -50,6 +50,8 @@ void drawTriangle(int x0, int y0, int x1, int y1, int x2, int y2, Color color);
 void drawTriangleFilled(int x0, int y0, int x1, int y1, int x2, int y2, Color color);
 void drawRectangle(int x, int y, int w, int h, Color color);
 void drawRectangleFilled(int x, int y, int w, int h, Color color);
+void drawCircle(int x, int y, int r, Color color);
+void drawCircleFilled(int x, int y, int r, Color color);
 void drawPolygon(int *points, int count, Color color);
 void drawPolygonFilled(int *points, int count, Color color);
 
@@ -59,6 +61,7 @@ void drawPolygonFilled(int *points, int count, Color color);
 // ---------- IMPLEMENTATION ---------- //
 // ------------------------------------ //
 #ifdef MINI_IMPLEMENTATION
+  #include <math.h>
   #include "miniglut.h"
   
   inline static void _empty() {};
@@ -114,7 +117,7 @@ void drawPolygonFilled(int *points, int count, Color color);
   
   void windowInit(int w, int h, const char *title) {
     glutInit(0, NULL);
-    glutInitWindowSize(1280, 720);
+    glutInitWindowSize(w, h);
     glutInitDisplayMode(GLUT_ALPHA);
     glutCreateWindow(title);
     
@@ -196,7 +199,7 @@ void drawPolygonFilled(int *points, int count, Color color);
       glVertex2i(x, y);
       glVertex2i(x + w, y);
       glVertex2i(x + w, y + h);
-      glVertex2i(x, y + h);      
+      glVertex2i(x, y + h);
     glEnd();
   }
   
@@ -228,6 +231,29 @@ void drawPolygonFilled(int *points, int count, Color color);
   
   inline void drawPolygonFilled(int *points, int count, Color color) {
     _drawPolygon(points, count, color, GL_TRIANGLE_STRIP);
+  }
+  
+  void _drawCircle(int x, int y, int r, Color color, int mode) {
+      float rr = (float)r;
+      float xx = (float)x;
+      float yy = (float)y;
+      int segments = 36;
+      
+    	glBegin(GL_TRIANGLE_FAN);
+        glColor4ub(color.r, color.g, color.b, color.a);
+        glVertex2i(x, y);
+        for (int i = 0; i <= segments; ++i) {
+          glVertex2f(x + (r * cos(i * (M_PI * 2) / segments)), y + (r * sin(i * (M_PI * 2) / segments)));
+        }
+      glEnd();
+  }
+  
+  inline void drawCircle(int x, int y, int r, Color color) {
+    _drawCircle(x, y, r, color, GL_LINES);
+  }
+  
+  inline void drawCircleFilled(int x, int y, int r, Color color) {
+    _drawCircle(x, y, r, color, GL_TRIANGLE_STRIP);
   }
   // TODO: Circle
 
