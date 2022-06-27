@@ -66,21 +66,36 @@ void drawPolygonFilled(int *points, int count, Color color);
   
   inline static void _empty() {};
   
+  unsigned char _keyboardKey(int update, unsigned char kkey) {
+    static unsigned char key;
+    
+    if (update) { key = kkey; }
+    return key;
+  }
+  
+  void _keyboard(unsigned char key, int x, int y) {
+    _keyboardKey(1, key);
+  }
+  
+  int keyboardDown(unsigned char key) {
+    return (_keyboardKey(0, 0) == key);
+  }
+  
   Tuple _mouseButtons(int update, int mbutton, int mstate) {
     static int button;
     static int state;
     
     if (update) { 
       if (mbutton == GLUT_LEFT_BUTTON) { 
-        button = MB_LEFT; 
+        button = MB_LEFT;
       } else if (mbutton == GLUT_MIDDLE_BUTTON) {
-        button = MB_MIDDLE; 
+        button = MB_MIDDLE;
       } else if (mbutton == GLUT_RIGHT_BUTTON) {
-        button = MB_RIGHT; 
+        button = MB_RIGHT;
       } else {
-        button = 0; 
+        button = 0;
       }
-      state = mstate; 
+      state = mstate;
     }
     return (Tuple){button, state};
   }
@@ -102,10 +117,13 @@ void drawPolygonFilled(int *points, int count, Color color);
     _mouseButtons(1, button, state);
   }
   
-  Vec2 mousePosition() { return _mousePosition(0, 0, 0); }
+  Vec2 mousePosition() { 
+    return _mousePosition(0, 0, 0);
+  }
+  
   int mouseDown(int button) { 
     Tuple mouse = _mouseButtons(0, 0, 0);
-    return (mouse.a & button) && mouse.b == GLUT_DOWN; 
+    return (mouse.a & button) && mouse.b == GLUT_DOWN;
   }
   
   // --- WINDOW --- //
@@ -126,8 +144,8 @@ void drawPolygonFilled(int *points, int count, Color color);
     glutMotionFunc(_mouseMotion);
     glutPassiveMotionFunc(_mouseMotion);
     glutReshapeFunc(_resize);
+    glutKeyboardFunc(_keyboard);
     /*
-    glutKeyboardFunc(keypress);
     glutMouseFunc(mouse);
     */
 
