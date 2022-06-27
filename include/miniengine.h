@@ -176,6 +176,7 @@ void drawPolygonFilled(int *points, int count, Color color);
     glEnd();
   }
   
+  // Triangles
   void _drawTriangle(int x0, int y0, int x1, int y1, int x2, int y2, Color color, int mode) {
     glBegin(mode);
       glColor4ub(color.r, color.g, color.b, color.a); 
@@ -193,6 +194,7 @@ void drawPolygonFilled(int *points, int count, Color color);
     _drawTriangle(x0, y0, x1, y1, x2, y2, color, GL_TRIANGLES);
   }
   
+  // Rectangles
   void _drawRectangle(int x, int y, int w, int h, Color color, int mode) {
     glBegin(mode);
       glColor4ub(color.r, color.g, color.b, color.a); 
@@ -211,6 +213,7 @@ void drawPolygonFilled(int *points, int count, Color color);
     _drawRectangle(x, y, w, h, color, GL_QUADS);
   }
   
+  // Polygons
   void _drawPolygon(int *points, int count, Color color, int mode) {
     glBegin(mode);
       glColor4ub(color.r, color.g, color.b, color.a); 
@@ -233,15 +236,19 @@ void drawPolygonFilled(int *points, int count, Color color);
     _drawPolygon(points, count, color, GL_TRIANGLE_STRIP);
   }
   
+  // Circles
   void _drawCircle(int x, int y, int r, Color color, int mode) {
       float rr = (float)r;
       float xx = (float)x;
       float yy = (float)y;
       int segments = 36;
       
-    	glBegin(GL_TRIANGLE_FAN);
+    	glBegin(mode);
         glColor4ub(color.r, color.g, color.b, color.a);
-        glVertex2i(x, y);
+        if (mode == GL_TRIANGLE_STRIP) {
+          glVertex2i(x, y);
+        }
+        
         for (int i = 0; i <= segments; ++i) {
           glVertex2f(x + (r * cos(i * (M_PI * 2) / segments)), y + (r * sin(i * (M_PI * 2) / segments)));
         }
@@ -249,7 +256,7 @@ void drawPolygonFilled(int *points, int count, Color color);
   }
   
   inline void drawCircle(int x, int y, int r, Color color) {
-    _drawCircle(x, y, r, color, GL_LINES);
+    _drawCircle(x, y, r, color, GL_LINE_LOOP);
   }
   
   inline void drawCircleFilled(int x, int y, int r, Color color) {
