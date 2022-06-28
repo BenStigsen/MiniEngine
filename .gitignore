@@ -1,4 +1,3 @@
-src/main.c
+main.c
 *.exe
 *.bat
-

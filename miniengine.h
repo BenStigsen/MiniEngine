@@ -2,6 +2,7 @@
 //   - Add line width (use triangles)
 //   - Remove deprecated GL_QUADS (use triangles)
 
+#include <stdlib.h>
 #include <stdbool.h>
 #include <stdio.h>
 
@@ -67,91 +68,12 @@ void drawPolygonFilled(int *points, int count, Color color);
 // ------------------------------------ //
 #ifdef MINI_IMPLEMENTATION
   #include <math.h>
+  #include <GLFW/glfw3.h>
   
-  // MINI_USE_FREEGLUT
-  #if defined(MINI_USE_FREEGLUT)
-    #include <GL/freeglut.h>
-    #if defined(__unix__)
-      #include <GL/glx.h>
-    #else
-      #include <GL/gl.h>
-    #endif
-  // MINI_USE_GLUT
-  #elif defined(MINI_USE_GLUT)
-    #include <GL/glut.h>
-    
-    #if defined(__unix__)
-      #include <GL/glx.h>
-    #else
-      #include <GL/gl.h>
-    #endif
-  // DEFAULT: MINIGLUT
-  #else
-    #include "miniglut.h"
-  #endif
+  GLFWwindow *window = NULL;
   
   inline static void _empty() {};
-  
-  unsigned char _keyboardKey(int update, unsigned char kkey) {
-    static unsigned char key;
-    
-    if (update) { key = kkey; }
-    return key;
-  }
-  
-  void _keyboard(unsigned char key, int x, int y) {
-    _keyboardKey(1, key);
-  }
-  
-  int keyboardDown(unsigned char key) {
-    return (_keyboardKey(0, 0) == key);
-  }
-  
-  Tuple _mouseButtons(int update, int mbutton, int mstate) {
-    static int button;
-    static int state;
-    
-    if (update) { 
-      if (mbutton == GLUT_LEFT_BUTTON) { 
-        button = MB_LEFT;
-      } else if (mbutton == GLUT_MIDDLE_BUTTON) {
-        button = MB_MIDDLE;
-      } else if (mbutton == GLUT_RIGHT_BUTTON) {
-        button = MB_RIGHT;
-      } else {
-        button = 0;
-      }
-      state = mstate;
-    }
-    return (Tuple){button, state};
-  }
-  
-  Vec2 _mousePosition(int update, int mx, int my) {
-    static int x;
-    static int y;
-    
-    if (update) { x = mx; y = my; }
-    return (Vec2){x, y};
-  }
-  
-  void _mouseMotion(int x, int y) {
-    _mousePosition(1, x, y);
-  }
-  
-  void _mouse(int button, int state, int x, int y) {
-    _mousePosition(1, x, y);
-    _mouseButtons(1, button, state);
-  }
-  
-  Vec2 mousePosition() { 
-    return _mousePosition(0, 0, 0);
-  }
-  
-  int mouseDown(int button) { 
-    Tuple mouse = _mouseButtons(0, 0, 0);
-    return (mouse.a & button) && mouse.b == GLUT_DOWN;
-  }
-  
+
   // --- WINDOW --- //
   void _resize(int w, int h) {
     glMatrixMode(GL_PROJECTION);
@@ -160,30 +82,28 @@ void drawPolygonFilled(int *points, int count, Color color);
   };
   
   void windowInit(int w, int h, const char *title) {
-    glutInit(0, NULL);
-    glutInitWindowSize(w, h);
-    glutInitDisplayMode(GLUT_ALPHA);
-    glutCreateWindow(title);
+    if (!glfwInit()) {
+      exit(-1);
+    }
+  
+    window = glfwCreateWindow(640, 480, "Hello World", NULL, NULL);
+    if (!window) {
+        glfwTerminate();
+        exit(-1);
+    }
     
-    glutDisplayFunc(_empty);
-    glutMouseFunc(_mouse);
-    glutMotionFunc(_mouseMotion);
-    glutPassiveMotionFunc(_mouseMotion);
-    glutReshapeFunc(_resize);
-    glutKeyboardFunc(_keyboard);
-    /*
-    glutMouseFunc(mouse);
-    */
-
+    glfwMakeContextCurrent(window);
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
     glOrtho(0, w, h, 0, 0.0f, 1.0f);
     glClearColor(0.3, 0.3, 0.9 ,0);
+    
+    printf("VERSION: %s\n", glGetString(GL_VERSION));
   }
   
-  void windowUpdate() { glutSwapBuffers(); glutMainLoopEvent(); }
+  void windowUpdate() { glfwSwapBuffers(window); glfwPollEvents(); }
   
-  void windowClose() { glutExit(); }
+  void windowClose() { glfwTerminate(); }
   
   void windowClear(Color color) {
     float r = (float)color.r / 0xFF;
