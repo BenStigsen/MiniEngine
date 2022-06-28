@@ -1,3 +1,7 @@
+// TODO:
+//   - Add line width (use triangles)
+//   - Remove deprecated GL_QUADS (use triangles)
+
 #include <stdbool.h>
 #include <stdio.h>
 
@@ -43,6 +47,7 @@ Color colorRGBA(int r, int g, int b, int a);
 
 // Input
 Vec2 mousePosition();
+int keyboardDown(unsigned char key);
 
 // Shapes
 void drawLine(int x0, int y0, int x1, int y1, Color color);
@@ -62,7 +67,28 @@ void drawPolygonFilled(int *points, int count, Color color);
 // ------------------------------------ //
 #ifdef MINI_IMPLEMENTATION
   #include <math.h>
-  #include "miniglut.h"
+  
+  // MINI_USE_FREEGLUT
+  #if defined(MINI_USE_FREEGLUT)
+    #include <GL/freeglut.h>
+    #if defined(__unix__)
+      #include <GL/glx.h>
+    #else
+      #include <GL/gl.h>
+    #endif
+  // MINI_USE_GLUT
+  #elif defined(MINI_USE_GLUT)
+    #include <GL/glut.h>
+    
+    #if defined(__unix__)
+      #include <GL/glx.h>
+    #else
+      #include <GL/gl.h>
+    #endif
+  // DEFAULT: MINIGLUT
+  #else
+    #include "miniglut.h"
+  #endif
   
   inline static void _empty() {};
   
@@ -184,6 +210,7 @@ void drawPolygonFilled(int *points, int count, Color color);
   Color colorRGBA(int r, int g, int b, int a) {
     return (Color){r, g, b, a};
   }
+  
   
   // --- DRAWING --- //
   void drawLine(int x0, int y0, int x1, int y1, Color color) {
