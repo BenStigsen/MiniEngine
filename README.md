@@ -9,6 +9,6 @@ to use regular GLUT or freeglut, then this can be done by defining one of the fo
 - `#define MINI_USE_GLUT`
 - `#define MINI_USE_FREEGLUT`
 
-The benefit to doing the above, is not more supported platforms, 
-but this also makes `miniengine` header-only, not having to include `miniglut.c` and `miniglut.h`.
+The benefit to doing the above, is more supported platforms as well as making
+`miniengine` header-only, not having to include `miniglut.c` and `miniglut.h`.
 
