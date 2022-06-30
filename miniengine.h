@@ -70,9 +70,7 @@ void drawPolygonFilled(int *points, int count, Color color);
   #include <math.h>
   #include <GLFW/glfw3.h>
   
-  GLFWwindow *window = NULL;
-  
-  inline static void _empty() {};
+  GLFWwindow *_window = NULL;
 
   // --- WINDOW --- //
   void _resize(int w, int h) {
@@ -85,23 +83,24 @@ void drawPolygonFilled(int *points, int count, Color color);
     if (!glfwInit()) {
       exit(-1);
     }
-  
-    window = glfwCreateWindow(640, 480, "Hello World", NULL, NULL);
-    if (!window) {
+
+    _window = glfwCreateWindow(640, 480, "Hello World", NULL, NULL);
+    if (!_window) {
         glfwTerminate();
         exit(-1);
     }
     
-    glfwMakeContextCurrent(window);
+    glEnable(GL_TEXTURE_2D);
+    glfwMakeContextCurrent(_window);
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
     glOrtho(0, w, h, 0, 0.0f, 1.0f);
     glClearColor(0.3, 0.3, 0.9 ,0);
-    
-    printf("VERSION: %s\n", glGetString(GL_VERSION));
   }
   
-  void windowUpdate() { glfwSwapBuffers(window); glfwPollEvents(); }
+  int windowShouldClose() { return glfwWindowShouldClose(_window); }
+  
+  void windowUpdate() { glfwSwapBuffers(_window); glfwPollEvents(); }
   
   void windowClose() { glfwTerminate(); }
   
@@ -227,6 +226,5 @@ void drawPolygonFilled(int *points, int count, Color color);
   inline void drawCircleFilled(int x, int y, int r, Color color) {
     _drawCircle(x, y, r, color, GL_TRIANGLE_STRIP);
   }
-  // TODO: Circle
 
 #endif // MINI_IMPLEMENTATION
