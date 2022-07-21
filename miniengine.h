@@ -2,17 +2,22 @@
 //   - Add line width (use triangles)
 //   - Remove deprecated GL_QUADS (use triangles)
 
+#ifndef MINI_H
+#define MINI_H
+
 #include <stdlib.h>
 #include <stdbool.h>
 #include <stdio.h>
 
-#ifndef MINI_H
-#define MINI_H
-
 // --- Constants --- //
+#define PI 3.14159265358979323846
+#define DEG2RAD (PI / 180.0f)
+
 #define MB_LEFT   1 
 #define MB_MIDDLE 2 
 #define MB_RIGHT  4 
+
+typedef enum { RELEASE, PRESS, CLICK, NONE } MouseState;
 
 // --- Structures --- // 
 typedef struct {
@@ -35,7 +40,24 @@ typedef struct {
 typedef struct {
   int x;
   int y;
+  MouseState state;
+  int button;
 } Mouse;
+
+typedef struct {
+  int state;
+  int key;
+} Keyboard;
+
+typedef struct {
+  int x;
+  int y;
+  int w;
+  int h;
+  Mouse mouse;
+  Mouse mouseprev;
+  Keyboard keyboard;
+} Window;
 
 // --- Functions --- // 
 void windowInit(int w, int h, const char *title);
@@ -60,6 +82,8 @@ void drawCircle(int x, int y, int r, Color color);
 void drawCircleFilled(int x, int y, int r, Color color);
 void drawPolygon(int *points, int count, Color color);
 void drawPolygonFilled(int *points, int count, Color color);
+void drawRing(int x, int y, int r1, int thickness, int start, int end, Color color);
+void drawRingFilled(int x, int y, int r1, int thickness, int start, int end, Color color);
 
 #endif // MINI_H
 
@@ -69,38 +93,65 @@ void drawPolygonFilled(int *points, int count, Color color);
 #ifdef MINI_IMPLEMENTATION
   #include <math.h>
   #include <GLFW/glfw3.h>
-  
-  GLFWwindow *_window = NULL;
 
-  // --- WINDOW --- //
+  GLFWwindow *glfw_window;
+
   void _resize(int w, int h) {
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
     glOrtho(0, w, h, 0, 0.0f, 1.0f);
   };
   
+  void _mouseButton(GLFWwindow *window, int button, int action, int mods) {
+    Window *win = glfwGetWindowUserPointer(window);
+    win->mouse.button = button;
+    win->mouse.state = action;
+  }
+  
+  // --- WINDOW --- //
+  
   void windowInit(int w, int h, const char *title) {
     if (!glfwInit()) {
       exit(-1);
     }
 
-    _window = glfwCreateWindow(640, 480, "Hello World", NULL, NULL);
-    if (!_window) {
+    glfw_window = glfwCreateWindow(w, h, "Hello World", NULL, NULL);
+    if (!glfw_window) {
         glfwTerminate();
         exit(-1);
     }
     
+    Window window = {0};
+    window.w = w;
+    window.h = h;
+    
+    glfwSetWindowUserPointer(glfw_window, &window);
+    glfwSetMouseButtonCallback(glfw_window, _mouseButton);
+    
     glEnable(GL_TEXTURE_2D);
-    glfwMakeContextCurrent(_window);
+    glfwMakeContextCurrent(glfw_window);
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
-    glOrtho(0, w, h, 0, 0.0f, 1.0f);
+    glOrtho(0, w, h, 0, 0, 1.0f);
     glClearColor(0.3, 0.3, 0.9 ,0);
   }
   
-  int windowShouldClose() { return glfwWindowShouldClose(_window); }
+  int windowShouldClose() { return glfwWindowShouldClose(glfw_window); }
   
-  void windowUpdate() { glfwSwapBuffers(_window); glfwPollEvents(); }
+  void windowUpdate() { 
+    glfwSwapBuffers(glfw_window);
+    
+    Window *win = glfwGetWindowUserPointer(glfw_window);
+    Mouse prev = win->mouse;
+    
+    glfwPollEvents();
+    
+    if (prev.state == CLICK && win->mouse.state == CLICK) {
+      win->mouse.state == PRESS;
+    } else if (prev.state == RELEASE && win->mouse.state == RELEASE) {
+      win->mouse.state == NONE;
+    }
+  }
   
   void windowClose() { glfwTerminate(); }
   
@@ -118,6 +169,9 @@ void drawPolygonFilled(int *points, int count, Color color);
     unsigned int g = (c >> 16) & 0xFF;
     unsigned int b = (c >>  8) & 0xFF;
     unsigned int a = c & 0xFF;
+    
+    if (c <= 0xFF)     { return (Color){c, c, c, 0xFF}; }
+    if (c <= 0xFFFFFF) { return (Color){r, g, b, 0xFF}; }
   
     return (Color){r, g, b, a};
   }
@@ -130,6 +184,38 @@ void drawPolygonFilled(int *points, int count, Color color);
     return (Color){r, g, b, a};
   }
   
+  // --- INPUT --- //
+  Vec2 mousePosition() {
+    double x;
+    double y;
+    glfwGetCursorPos(glfw_window, &x, &y);
+    return (Vec2){(int)x, (int)y};
+  }
+  
+  int mouseClicked(int button) {
+    Window *win = glfwGetWindowUserPointer(glfw_window);
+    return win->mouse.button == button && win->mouse.state == CLICK;
+  }
+  
+  int mousePressed(int button) {
+    Window *win = glfwGetWindowUserPointer(glfw_window);
+    return win->mouse.button == button && win->mouse.state == PRESS;
+  }
+  
+  int mouseReleased(int button) {
+    Window *win = glfwGetWindowUserPointer(glfw_window);
+    return win->mouse.button == button && win->mouse.state == RELEASE;
+  }
+  
+  int keyPressed(int key) {
+    return glfwGetKey(glfw_window, key) == GLFW_PRESS;
+  }
+  
+  // Not working as intended
+  // TODO: Add keyHeld();
+  int keyReleased(int key) {
+    return glfwGetKey(glfw_window, key) == GLFW_RELEASE;
+  }
   
   // --- DRAWING --- //
   void drawLine(int x0, int y0, int x1, int y1, Color color) {
@@ -202,21 +288,18 @@ void drawPolygonFilled(int *points, int count, Color color);
   
   // Circles
   void _drawCircle(int x, int y, int r, Color color, int mode) {
-      float rr = (float)r;
-      float xx = (float)x;
-      float yy = (float)y;
-      int segments = 36;
+    int segments = 36;
+    
+    glBegin(mode);
+      glColor4ub(color.r, color.g, color.b, color.a);
+      if (mode == GL_TRIANGLE_STRIP) {
+        glVertex2i(x, y);
+      }
       
-    	glBegin(mode);
-        glColor4ub(color.r, color.g, color.b, color.a);
-        if (mode == GL_TRIANGLE_STRIP) {
-          glVertex2i(x, y);
-        }
-        
-        for (int i = 0; i <= segments; ++i) {
-          glVertex2f(x + (r * cos(i * (M_PI * 2) / segments)), y + (r * sin(i * (M_PI * 2) / segments)));
-        }
-      glEnd();
+      for (int i = 0; i <= segments; ++i) {
+        glVertex2i(x + (r * cos(i * (M_PI * 2) / segments)), y + (r * sin(i * (M_PI * 2) / segments)));
+      }
+    glEnd();
   }
   
   inline void drawCircle(int x, int y, int r, Color color) {
@@ -224,7 +307,74 @@ void drawPolygonFilled(int *points, int count, Color color);
   }
   
   inline void drawCircleFilled(int x, int y, int r, Color color) {
-    _drawCircle(x, y, r, color, GL_TRIANGLE_STRIP);
+    _drawCircle(x, y, r, color, GL_TRIANGLE_FAN);
+  }
+  
+  // Rings
+  void _drawRing(int x, int y, int r1, int thickness, int start, int end, Color color, int mode) {
+    int segments = 36;
+    
+    int a1 = start;
+    int a2 = end;
+    
+    int r2 = r1 + thickness;
+    
+    end = end > 360 ? 360 : end;
+    
+    float stride = (float)(a2 - a1) / (float)segments;
+    float angle = a1;
+    
+    glBegin(mode);
+      glColor4ub(color.r, color.g, color.b, color.a);
+      
+      if (mode == GL_TRIANGLE_STRIP) {
+        for (int i = 0; i < segments; ++i) {
+          float a = DEG2RAD*angle;
+        
+          glVertex2i(x + sin(a) * r1, y + cos(a) * r1);
+          glVertex2i(x + sin(a) * r2, y + cos(a) * r2);
+          
+          glVertex2i(x + sin(DEG2RAD * (angle + stride)) * r1, y + cos(DEG2RAD * (angle + stride)) * r1);
+          glVertex2i(x + sin(DEG2RAD * (angle + stride)) * r1, y + cos(DEG2RAD * (angle + stride)) * r1);
+          
+          glVertex2i(x + sin(a) * r2, y + cos(a) * r2);
+          glVertex2i(x + sin(DEG2RAD * (angle + stride)) * r2, y + cos(DEG2RAD * (angle + stride)) * r2);
+          
+          angle += stride;
+        }
+      } else {
+        for (int i = 0; i < segments; ++i) {
+          float a = DEG2RAD*angle;
+        
+          glVertex2i(x + sin(a) * r2, y + cos(a) * r2);
+          glVertex2i(x + sin(DEG2RAD * (angle + stride)) * r2, y + cos(DEG2RAD * (angle + stride)) * r2);
+          
+          angle += stride;
+        }
+        
+        if (start == (end % 360)) {
+          glEnd();
+          glBegin(mode);
+        }
+        
+        for (int i = 0; i < segments; ++i) {
+          float a = DEG2RAD*angle;
+          glVertex2i(x + sin(a) * r1, y + cos(a) * r1);
+          glVertex2i(x + sin(DEG2RAD * (angle - stride)) * r1, y + cos(DEG2RAD * (angle - stride)) * r1);
+        
+          
+          angle -= stride;
+        }
+      }
+    glEnd();
+  }
+  
+  inline void drawRing(int x, int y, int r1, int thickness, int start, int end, Color color) {
+    _drawRing(x, y, r1, thickness, start, end, color, GL_LINE_LOOP);
+  }
+  
+  inline void drawRingFilled(int x, int y, int r1, int thickness, int start, int end, Color color) {
+    _drawRing(x, y, r1, thickness, start, end, color, GL_TRIANGLE_STRIP);
   }
 
 #endif // MINI_IMPLEMENTATION
