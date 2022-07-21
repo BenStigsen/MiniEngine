@@ -1,7 +1,3 @@
-// TODO:
-//   - Add line width (use triangles)
-//   - Remove deprecated GL_QUADS (use triangles)
-
 #ifndef MINI_H
 #define MINI_H
   #include <stdlib.h>
@@ -11,6 +7,7 @@
   // --- Constants --- //
   #define PI 3.14159265358979323846
   #define DEG2RAD (PI / 180.0f)
+  #define TAU (PI * 2.0)
   
   #define MB_LEFT   1 
   #define MB_MIDDLE 2 
@@ -86,8 +83,8 @@
   void drawCircleFilled(float x, float y, float r, Color color);
   void drawPolygon(float *pofloats, int count, Color color);
   void drawPolygonFilled(float *points, int count, Color color);
-  void drawRing(float x, float y, float r1, float thickness, float start, float end, Color color);
-  void drawRingFilled(float x, float y, float r1, float thickness, float start, float end, Color color);
+  void drawArc(float x, float y, float r1, float thickness, float start, float end, Color color);
+  void drawArcFilled(float x, float y, float r1, float thickness, float start, float end, Color color);
 #endif // MINI_H
 
 // ------------------------------------ //
@@ -132,9 +129,8 @@
     
     glfwSetWindowUserPointer(glfw_window, &window);
     glfwSetMouseButtonCallback(glfw_window, _mouseButton);
-    
-    glEnable(GL_TEXTURE_2D);
     glfwMakeContextCurrent(glfw_window);
+    glfwSwapInterval(1);
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
     glOrtho(0, w, h, 0, 0, 1.0f);
@@ -275,7 +271,7 @@
   }
   
   inline void drawRectangleFilled(float x, float y, float w, float h, Color color) {
-    _drawRectangle(x, y, w, h, color, GL_QUADS);
+    _drawRectangle(x, y, w, h, color, GL_TRIANGLE_FAN);
   }
   
   // Polygons
@@ -326,7 +322,7 @@
   }
   
   // Rings
-  void _drawRing(float x, float y, float r1, float thickness, float start, float end, Color color, int mode) {
+  void _drawArc(float x, float y, float r1, float thickness, float start, float end, Color color, int mode) {
     int segments = 36;
     
     float a1 = start;
@@ -384,12 +380,12 @@
     glEnd();
   }
   
-  inline void drawRing(float x, float y, float r1, float thickness, float start, float end, Color color) {
-    _drawRing(x, y, r1, thickness, start, end, color, GL_LINE_LOOP);
+  inline void drawArc(float x, float y, float r1, float thickness, float start, float end, Color color) {
+    _drawArc(x, y, r1, thickness, start, end, color, GL_LINE_LOOP);
   }
   
-  inline void drawRingFilled(float x, float y, float r1, float thickness, float start, float end, Color color) {
-    _drawRing(x, y, r1, thickness, start, end, color, GL_TRIANGLE_STRIP);
+  inline void drawArcFilled(float x, float y, float r1, float thickness, float start, float end, Color color) {
+    _drawArc(x, y, r1, thickness, start, end, color, GL_TRIANGLE_STRIP);
   }
 
 #endif // MINI_IMPLEMENTATION
