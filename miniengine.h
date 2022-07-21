@@ -148,7 +148,11 @@
     Window *win = glfwGetWindowUserPointer(glfw_window);
     Mouse prev = win->mouse;
     
-    glfwPollEvents();
+    #if defined(MINI_GUI_MODE)
+      glfwWaitEvents();
+    #else
+      glfwPollEvents();
+    #endif
     
     if (prev.state == CLICK && win->mouse.state == CLICK) {
       win->mouse.state == PRESS;
