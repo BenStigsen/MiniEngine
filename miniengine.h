@@ -4,87 +4,90 @@
 
 #ifndef MINI_H
 #define MINI_H
-
-#include <stdlib.h>
-#include <stdbool.h>
-#include <stdio.h>
-
-// --- Constants --- //
-#define PI 3.14159265358979323846
-#define DEG2RAD (PI / 180.0f)
-
-#define MB_LEFT   1 
-#define MB_MIDDLE 2 
-#define MB_RIGHT  4 
-
-typedef enum { RELEASE, PRESS, CLICK, NONE } MouseState;
-
-// --- Structures --- // 
-typedef struct {
-  int a;
-  int b;
-} Tuple;
-
-typedef struct {
-  int x;
-  int y;
-} Vec2;
-
-typedef struct {
-  unsigned char r;
-  unsigned char g;
-  unsigned char b;
-  unsigned char a;
-} Color;
-
-typedef struct {
-  int x;
-  int y;
-  MouseState state;
-  int button;
-} Mouse;
-
-typedef struct {
-  int state;
-  int key;
-} Keyboard;
-
-typedef struct {
-  int x;
-  int y;
-  int w;
-  int h;
-  Mouse mouse;
-  Mouse mouseprev;
-  Keyboard keyboard;
-} Window;
-
-// --- Functions --- // 
-void windowInit(int w, int h, const char *title);
-void windowUpdate();
-void windowClose();
-void windowClear(Color color);
-
-Color colorRGB(int r, int g, int b);
-Color colorRGBA(int r, int g, int b, int a);
-
-// Input
-Vec2 mousePosition();
-int keyboardDown(unsigned char key);
-
-// Shapes
-void drawLine(int x0, int y0, int x1, int y1, Color color);
-void drawTriangle(int x0, int y0, int x1, int y1, int x2, int y2, Color color);
-void drawTriangleFilled(int x0, int y0, int x1, int y1, int x2, int y2, Color color);
-void drawRectangle(int x, int y, int w, int h, Color color);
-void drawRectangleFilled(int x, int y, int w, int h, Color color);
-void drawCircle(int x, int y, int r, Color color);
-void drawCircleFilled(int x, int y, int r, Color color);
-void drawPolygon(int *points, int count, Color color);
-void drawPolygonFilled(int *points, int count, Color color);
-void drawRing(int x, int y, int r1, int thickness, int start, int end, Color color);
-void drawRingFilled(int x, int y, int r1, int thickness, int start, int end, Color color);
-
+  #include <stdlib.h>
+  #include <stdbool.h>
+  #include <stdio.h>
+  
+  // --- Constants --- //
+  #define PI 3.14159265358979323846
+  #define DEG2RAD (PI / 180.0f)
+  
+  #define MB_LEFT   1 
+  #define MB_MIDDLE 2 
+  #define MB_RIGHT  4 
+  
+  typedef enum { RELEASE, PRESS, CLICK, NONE } MouseState;
+  
+  // --- Structures --- // 
+  typedef struct {
+    int a;
+    int b;
+  } Tuple;
+  
+  typedef struct {
+    int x;
+    int y;
+  } Vec2;
+  
+  typedef struct {
+    unsigned char r;
+    unsigned char g;
+    unsigned char b;
+    unsigned char a;
+  } Color;
+  
+  typedef struct {
+    int x;
+    int y;
+    MouseState state;
+    int button;
+  } Mouse;
+  
+  typedef struct {
+    int state;
+    int key;
+  } Keyboard;
+  
+  typedef struct {
+    int x;
+    int y;
+    int w;
+    int h;
+    Mouse mouse;
+    Mouse mouseprev;
+    Keyboard keyboard;
+    double prev;
+    double dt;
+  } Window;
+  
+  // --- Functions --- // 
+  void windowInit(int w, int h, const char *title);
+  void windowUpdate();
+  void windowClose();
+  void windowClear(Color color);
+  
+  Color colorRGB(int r, int g, int b);
+  Color colorRGBA(int r, int g, int b, int a);
+  
+  // Time
+  double delta();
+  
+  // Input
+  Vec2 mousePosition();
+  int keyboardDown(unsigned char key);
+  
+  // Shapes
+  void drawLine(float x0, float y0, float x1, float y1, Color color);
+  void drawTriangle(float x0, float y0, float x1, float y1, float x2, float y2, Color color);
+  void drawTriangleFilled(float x0, float y0, float x1, float y1, float x2, float y2, Color color);
+  void drawRectangle(float x, float y, float w, float h, Color color);
+  void drawRectangleFilled(float x, float y, float w, float h, Color color);
+  void drawCircle(float x, float y, float r, Color color);
+  void drawCircleFilled(float x, float y, float r, Color color);
+  void drawPolygon(float *pofloats, int count, Color color);
+  void drawPolygonFilled(float *points, int count, Color color);
+  void drawRing(float x, float y, float r1, float thickness, float start, float end, Color color);
+  void drawRingFilled(float x, float y, float r1, float thickness, float start, float end, Color color);
 #endif // MINI_H
 
 // ------------------------------------ //
@@ -124,6 +127,8 @@ void drawRingFilled(int x, int y, int r1, int thickness, int start, int end, Col
     Window window = {0};
     window.w = w;
     window.h = h;
+    window.dt = 0.0;
+    window.prev = 0.0;
     
     glfwSetWindowUserPointer(glfw_window, &window);
     glfwSetMouseButtonCallback(glfw_window, _mouseButton);
@@ -151,6 +156,10 @@ void drawRingFilled(int x, int y, int r1, int thickness, int start, int end, Col
     } else if (prev.state == RELEASE && win->mouse.state == RELEASE) {
       win->mouse.state == NONE;
     }
+    
+    double current = glfwGetTime();
+    win->dt = current - win->prev;
+    win->prev = current;
   }
   
   void windowClose() { glfwTerminate(); }
@@ -182,6 +191,12 @@ void drawRingFilled(int x, int y, int r1, int thickness, int start, int end, Col
   
   Color colorRGBA(int r, int g, int b, int a) {
     return (Color){r, g, b, a};
+  }
+  
+  // --- TIME --- //
+  double delta() {
+    Window *win = glfwGetWindowUserPointer(glfw_window);
+    return win->dt;
   }
   
   // --- INPUT --- //
