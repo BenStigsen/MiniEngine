@@ -233,110 +233,110 @@
   }
   
   // --- DRAWING --- //
-  void drawLine(int x0, int y0, int x1, int y1, Color color) {
+  void drawLine(float x0, float y0, float x1, float y1, Color color) {
     glBegin(GL_LINES);
       glColor4ub(color.r, color.g, color.b, color.a); 
-      glVertex2i(x0, y0);
-      glVertex2i(x1, y1);
+      glVertex2f(x0, y0);
+      glVertex2f(x1, y1);
     glEnd();
   }
   
   // Triangles
-  void _drawTriangle(int x0, int y0, int x1, int y1, int x2, int y2, Color color, int mode) {
+  void _drawTriangle(float x0, float y0, float x1, float y1, float x2, float y2, Color color, int mode) {
     glBegin(mode);
       glColor4ub(color.r, color.g, color.b, color.a); 
-      glVertex2i(x0, y0);
-      glVertex2i(x1, y1);
-      glVertex2i(x2, y2);
+      glVertex2f(x0, y0);
+      glVertex2f(x1, y1);
+      glVertex2f(x2, y2);
     glEnd();
   }
   
-  inline void drawTriangle(int x0, int y0, int x1, int y1, int x2, int y2, Color color) {
+  inline void drawTriangle(float x0, float y0, float x1, float y1, float x2, float y2, Color color) {
     _drawTriangle(x0, y0, x1, y1, x2, y2, color, GL_LINE_LOOP);
   }
   
-  inline void drawTriangleFilled(int x0, int y0, int x1, int y1, int x2, int y2, Color color) {
+  inline void drawTriangleFilled(float x0, float y0, float x1, float y1, float x2, float y2, Color color) {
     _drawTriangle(x0, y0, x1, y1, x2, y2, color, GL_TRIANGLES);
   }
   
   // Rectangles
-  void _drawRectangle(int x, int y, int w, int h, Color color, int mode) {
+  void _drawRectangle(float x, float y, float w, float h, Color color, int mode) {
     glBegin(mode);
       glColor4ub(color.r, color.g, color.b, color.a); 
-      glVertex2i(x, y);
-      glVertex2i(x + w, y);
-      glVertex2i(x + w, y + h);
-      glVertex2i(x, y + h);
+      glVertex2f(x, y);
+      glVertex2f(x + w, y);
+      glVertex2f(x + w, y + h);
+      glVertex2f(x, y + h);
     glEnd();
   }
   
-  inline void drawRectangle(int x, int y, int w, int h, Color color) {
+  inline void drawRectangle(float x, float y, float w, float h, Color color) {
     _drawRectangle(x, y, w, h, color, GL_LINE_LOOP);
   }
   
-  inline void drawRectangleFilled(int x, int y, int w, int h, Color color) {
+  inline void drawRectangleFilled(float x, float y, float w, float h, Color color) {
     _drawRectangle(x, y, w, h, color, GL_QUADS);
   }
   
   // Polygons
-  void _drawPolygon(int *points, int count, Color color, int mode) {
+  void _drawPolygon(float *points, int count, Color color, int mode) {
     glBegin(mode);
       glColor4ub(color.r, color.g, color.b, color.a); 
       for (int i = 0; i < count; i += 2) {
-        glVertex2i(points[i], points[i+1]);
+        glVertex2f(points[i], points[i+1]);
       }
       
       if (mode == GL_TRIANGLE_STRIP) {
-        glVertex2i(points[0], points[1]);
+        glVertex2f(points[0], points[1]);
       }
       
     glEnd();
   }
   
-  inline void drawPolygon(int *points, int count, Color color) {
+  inline void drawPolygon(float *points, int count, Color color) {
     _drawPolygon(points, count, color, GL_LINE_LOOP);
   }
   
-  inline void drawPolygonFilled(int *points, int count, Color color) {
+  inline void drawPolygonFilled(float *points, int count, Color color) {
     _drawPolygon(points, count, color, GL_TRIANGLE_STRIP);
   }
   
   // Circles
-  void _drawCircle(int x, int y, int r, Color color, int mode) {
+  void _drawCircle(float x, float y, float r, Color color, int mode) {
     int segments = 36;
     
     glBegin(mode);
       glColor4ub(color.r, color.g, color.b, color.a);
       if (mode == GL_TRIANGLE_STRIP) {
-        glVertex2i(x, y);
+        glVertex2f(x, y);
       }
       
       for (int i = 0; i <= segments; ++i) {
-        glVertex2i(x + (r * cos(i * (M_PI * 2) / segments)), y + (r * sin(i * (M_PI * 2) / segments)));
+        glVertex2f(x + (r * cos(i * (M_PI * 2) / segments)), y + (r * sin(i * (M_PI * 2) / segments)));
       }
     glEnd();
   }
   
-  inline void drawCircle(int x, int y, int r, Color color) {
+  inline void drawCircle(float x, float y, float r, Color color) {
     _drawCircle(x, y, r, color, GL_LINE_LOOP);
   }
   
-  inline void drawCircleFilled(int x, int y, int r, Color color) {
+  inline void drawCircleFilled(float x, float y, float r, Color color) {
     _drawCircle(x, y, r, color, GL_TRIANGLE_FAN);
   }
   
   // Rings
-  void _drawRing(int x, int y, int r1, int thickness, int start, int end, Color color, int mode) {
+  void _drawRing(float x, float y, float r1, float thickness, float start, float end, Color color, int mode) {
     int segments = 36;
     
-    int a1 = start;
-    int a2 = end;
+    float a1 = start;
+    float a2 = end;
     
-    int r2 = r1 + thickness;
+    float r2 = r1 + thickness;
     
     end = end > 360 ? 360 : end;
     
-    float stride = (float)(a2 - a1) / (float)segments;
+    float stride = (a2 - a1) / (float)segments;
     float angle = a1;
     
     glBegin(mode);
@@ -346,14 +346,14 @@
         for (int i = 0; i < segments; ++i) {
           float a = DEG2RAD*angle;
         
-          glVertex2i(x + sin(a) * r1, y + cos(a) * r1);
-          glVertex2i(x + sin(a) * r2, y + cos(a) * r2);
+          glVertex2f(x + sin(a) * r1, y + cos(a) * r1);
+          glVertex2f(x + sin(a) * r2, y + cos(a) * r2);
           
-          glVertex2i(x + sin(DEG2RAD * (angle + stride)) * r1, y + cos(DEG2RAD * (angle + stride)) * r1);
-          glVertex2i(x + sin(DEG2RAD * (angle + stride)) * r1, y + cos(DEG2RAD * (angle + stride)) * r1);
+          glVertex2f(x + sin(DEG2RAD * (angle + stride)) * r1, y + cos(DEG2RAD * (angle + stride)) * r1);
+          glVertex2f(x + sin(DEG2RAD * (angle + stride)) * r1, y + cos(DEG2RAD * (angle + stride)) * r1);
           
-          glVertex2i(x + sin(a) * r2, y + cos(a) * r2);
-          glVertex2i(x + sin(DEG2RAD * (angle + stride)) * r2, y + cos(DEG2RAD * (angle + stride)) * r2);
+          glVertex2f(x + sin(a) * r2, y + cos(a) * r2);
+          glVertex2f(x + sin(DEG2RAD * (angle + stride)) * r2, y + cos(DEG2RAD * (angle + stride)) * r2);
           
           angle += stride;
         }
@@ -361,21 +361,21 @@
         for (int i = 0; i < segments; ++i) {
           float a = DEG2RAD*angle;
         
-          glVertex2i(x + sin(a) * r2, y + cos(a) * r2);
-          glVertex2i(x + sin(DEG2RAD * (angle + stride)) * r2, y + cos(DEG2RAD * (angle + stride)) * r2);
+          glVertex2f(x + sin(a) * r2, y + cos(a) * r2);
+          glVertex2f(x + sin(DEG2RAD * (angle + stride)) * r2, y + cos(DEG2RAD * (angle + stride)) * r2);
           
           angle += stride;
         }
         
-        if (start == (end % 360)) {
+        if ((int)start == ((int)end % 360)) {
           glEnd();
           glBegin(mode);
         }
         
         for (int i = 0; i < segments; ++i) {
           float a = DEG2RAD*angle;
-          glVertex2i(x + sin(a) * r1, y + cos(a) * r1);
-          glVertex2i(x + sin(DEG2RAD * (angle - stride)) * r1, y + cos(DEG2RAD * (angle - stride)) * r1);
+          glVertex2f(x + sin(a) * r1, y + cos(a) * r1);
+          glVertex2f(x + sin(DEG2RAD * (angle - stride)) * r1, y + cos(DEG2RAD * (angle - stride)) * r1);
         
           
           angle -= stride;
@@ -384,11 +384,11 @@
     glEnd();
   }
   
-  inline void drawRing(int x, int y, int r1, int thickness, int start, int end, Color color) {
+  inline void drawRing(float x, float y, float r1, float thickness, float start, float end, Color color) {
     _drawRing(x, y, r1, thickness, start, end, color, GL_LINE_LOOP);
   }
   
-  inline void drawRingFilled(int x, int y, int r1, int thickness, int start, int end, Color color) {
+  inline void drawRingFilled(float x, float y, float r1, float thickness, float start, float end, Color color) {
     _drawRing(x, y, r1, thickness, start, end, color, GL_TRIANGLE_STRIP);
   }
 
