@@ -83,6 +83,8 @@
   void drawCircleFilled(float x, float y, float r, Color color);
   void drawPolygon(float *pofloats, int count, Color color);
   void drawPolygonFilled(float *points, int count, Color color);
+  void drawSlice(float x, float y, float r, float start, float end, Color color);
+  void drawSliceFilled(float x, float y, float r, float start, float end, Color color);
   void drawArc(float x, float y, float r1, float thickness, float start, float end, Color color);
   void drawArcFilled(float x, float y, float r1, float thickness, float start, float end, Color color);
 #endif // MINI_H
@@ -96,6 +98,7 @@
 
   GLFWwindow *glfw_window;
 
+  // --- INTERNAL --- //
   void _resize(int w, int h) {
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
@@ -321,6 +324,46 @@
     _drawCircle(x, y, r, color, GL_TRIANGLE_FAN);
   }
   
+  // Slices
+  void _drawSlice(float x, float y, float r, float start, float end, Color color, int mode) {
+    int segments = 36;
+    
+    end = end - start > 360 ? start + 360 : end;
+    float stride = (end - start) / (float)segments;
+    float angle = start;
+    
+    glBegin(mode);
+      glColor4ub(color.r, color.g, color.b, color.a);
+      
+      if (mode == GL_TRIANGLE_FAN) {
+        for (int i = 0; i < segments; ++i) {
+          float a = DEG2RAD * angle;
+          glVertex2f(x, y);
+          glVertex2f(x + sin(a) * r, y + cos(a) * r);
+          glVertex2f(x + sin(DEG2RAD * (angle + stride)) * r, y + cos(DEG2RAD * (angle + stride)) * r);
+          glVertex2f(x + sin(DEG2RAD * (angle + stride * 2)) * r, y + cos(DEG2RAD * (angle + stride * 2)) * r);
+          angle += stride;
+        }
+      } else {
+        if (end < 360) { glVertex2f(x, y); }
+        
+        for (int i = 0; i < segments; ++i) {
+          glVertex2f(x + sin(DEG2RAD * (angle + stride)) * r, y + cos(DEG2RAD * (angle + stride)) * r);
+          glVertex2f(x + sin(DEG2RAD * (angle + stride * 2)) * r, y + cos(DEG2RAD * (angle + stride * 2)) * r);
+          angle += stride;
+        }
+      }
+    glEnd();
+  }
+  
+  inline void drawSlice(float x, float y, float r, float start, float end, Color color) {
+    _drawSlice(x, y, r, start, end, color, GL_LINE_LOOP);
+  }
+  
+  inline void drawSliceFilled(float x, float y, float r, float start, float end, Color color) {
+    _drawSlice(x, y, r, start, end, color, GL_TRIANGLE_FAN);
+  }
+  
   // Rings
   void _drawArc(float x, float y, float r1, float thickness, float start, float end, Color color, int mode) {
     int segments = 36;
@@ -330,7 +373,7 @@
     
     float r2 = r1 + thickness;
     
-    end = end > 360 ? 360 : end;
+    end = end - start > 360 ? start + 360 : end;
     
     float stride = (a2 - a1) / (float)segments;
     float angle = a1;
@@ -356,10 +399,8 @@
       } else {
         for (int i = 0; i < segments; ++i) {
           float a = DEG2RAD*angle;
-        
           glVertex2f(x + sin(a) * r2, y + cos(a) * r2);
           glVertex2f(x + sin(DEG2RAD * (angle + stride)) * r2, y + cos(DEG2RAD * (angle + stride)) * r2);
-          
           angle += stride;
         }
         
@@ -372,8 +413,6 @@
           float a = DEG2RAD*angle;
           glVertex2f(x + sin(a) * r1, y + cos(a) * r1);
           glVertex2f(x + sin(DEG2RAD * (angle - stride)) * r1, y + cos(DEG2RAD * (angle - stride)) * r1);
-        
-          
           angle -= stride;
         }
       }
