@@ -63,6 +63,7 @@
   void windowClose();
   void windowClear(Color color);
   
+  Color colorHex(unsigned int c);
   Color colorRGB(int r, int g, int b);
   Color colorRGBA(int r, int g, int b, int a);
   
@@ -71,7 +72,12 @@
   
   // Input
   Vec2 mousePosition();
-  int keyboardDown(unsigned char key);
+  int mouseClicked(int button);
+  int mousePressed(int button);
+  int mouseReleased(int button);
+  
+  int keyPressed(int key);
+  int keyReleased(int key);
   
   // Shapes
   void drawLine(float x0, float y0, float x1, float y1, Color color);
