@@ -385,19 +385,16 @@
     _drawSlice(x, y, r, start, end, color, GL_TRIANGLE_FAN);
   }
   
-  // Rings
+  // Arcs
   void _drawArc(float x, float y, float r1, float thickness, float start, float end, Color color, int mode) {
     int segments = 36;
-    
-    float a1 = start;
-    float a2 = end;
-    
+
     float r2 = r1 + thickness;
     
     end = end - start > 360 ? start + 360 : end;
     
-    float stride = (a2 - a1) / (float)segments;
-    float angle = a1;
+    float stride = (end - start) / (float)segments;
+    float angle = start;
     
     glBegin(mode);
       glColor4ub(color.r, color.g, color.b, color.a);
@@ -405,7 +402,7 @@
       if (mode == GL_TRIANGLE_STRIP) {
         for (int i = 0; i < segments; ++i) {
           float a = DEG2RAD*angle;
-        
+
           glVertex2f(x + sin(a) * r1, y + cos(a) * r1);
           glVertex2f(x + sin(a) * r2, y + cos(a) * r2);
           
