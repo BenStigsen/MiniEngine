@@ -101,6 +101,10 @@
 #ifdef MINI_IMPLEMENTATION
   #include <math.h>
   #include <GLFW/glfw3.h>
+  
+  #ifdef MINI_FONTS
+    #include "./addons/minifonts.h"
+  #endif
 
   GLFWwindow *glfw_window;
 
