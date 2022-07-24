@@ -361,16 +361,16 @@
           float a = DEG2RAD * angle;
           glVertex2f(x, y);
           glVertex2f(x + sin(a) * r, y + cos(a) * r);
+          glVertex2f(x + sin(DEG2RAD * angle) * r, y + cos(DEG2RAD * angle) * r);
           glVertex2f(x + sin(DEG2RAD * (angle + stride)) * r, y + cos(DEG2RAD * (angle + stride)) * r);
-          glVertex2f(x + sin(DEG2RAD * (angle + stride * 2)) * r, y + cos(DEG2RAD * (angle + stride * 2)) * r);
           angle += stride;
         }
       } else {
         if (end < 360) { glVertex2f(x, y); }
         
         for (int i = 0; i < segments; ++i) {
+          glVertex2f(x + sin(DEG2RAD * angle) * r, y + cos(DEG2RAD * angle) * r);
           glVertex2f(x + sin(DEG2RAD * (angle + stride)) * r, y + cos(DEG2RAD * (angle + stride)) * r);
-          glVertex2f(x + sin(DEG2RAD * (angle + stride * 2)) * r, y + cos(DEG2RAD * (angle + stride * 2)) * r);
           angle += stride;
         }
       }
