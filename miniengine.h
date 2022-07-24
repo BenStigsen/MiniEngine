@@ -187,14 +187,21 @@
   }
   
   Color colorHex(unsigned int c) {
+    if (c <= 0xFF) { return (Color){c, c, c, 0xFF}; }
+    
+    if (c <= 0xFFFFFF) {
+      unsigned int r = (c >> 16) & 0xFF;
+      unsigned int g = (c >>  8) & 0xFF;
+      unsigned int b = c & 0xFF;
+      
+      return (Color){r, g, b, 0xFF};
+    }
+  
     unsigned int r = (c >> 24) & 0xFF;
     unsigned int g = (c >> 16) & 0xFF;
     unsigned int b = (c >>  8) & 0xFF;
     unsigned int a = c & 0xFF;
-    
-    if (c <= 0xFF)     { return (Color){c, c, c, 0xFF}; }
-    if (c <= 0xFFFFFF) { return (Color){r, g, b, 0xFF}; }
-  
+
     return (Color){r, g, b, a};
   }
   
